@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/AlexTheProgrammer/raft/server"
 	"github.com/urfave/cli"
 )
 
@@ -76,7 +77,8 @@ func main() {
 
 func devCommand(c *cli.Context) error {
 	fmt.Println("Starting Raft in development mode...")
-	// Implement your 'raft dev' functionality here.
+	build()
+	server.Serve()
 	return nil
 }
 
