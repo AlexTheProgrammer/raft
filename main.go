@@ -1,11 +1,53 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"log"
 	"os"
+	"os/exec"
+	"path/filepath"
 
 	"github.com/urfave/cli"
 )
+
+const distFolder string = "dist"
+
+//go:embed assets/*
+var assets embed.FS
+
+func copyAssets() {
+	files := readFiles()
+
+	for k, v := range files {
+		err := os.WriteFile(filepath.Join(distFolder, k), v, 0644)
+		if err != nil {
+			log.Fatalf("could not create asset %q", k)
+		}
+	}
+}
+
+func readFiles() map[string][]byte {
+
+	resp := make(map[string][]byte)
+	files := []string{
+		"index.html",
+		"script.js",
+		"wasm_exec.js",
+	}
+
+	// Read and display the file content
+	for _, f := range files {
+
+		fBytes, err := assets.ReadFile("assets/" + f)
+		if err != nil {
+			log.Fatalf("could not load in file %q error %v", f, err)
+		}
+		resp[f] = fBytes
+	}
+
+	return resp
+}
 
 func main() {
 	app := cli.NewApp()
@@ -40,6 +82,30 @@ func devCommand(c *cli.Context) error {
 
 func buildCommand(c *cli.Context) error {
 	fmt.Println("Building Raft bundle...")
-	// Implement your 'raft build' functionality here.
+	build()
 	return nil
+}
+
+// build generates the wasm binary to be included in the build dist
+func build() {
+	// Command to build a Go program in the current directory
+	os.Setenv("GOOS", "js")
+	os.Setenv("GOARCH", "wasm")
+	cmd := exec.Command("go", "build", "-o", filepath.Join(distFolder, "main.wasm"))
+
+	cmd.Dir = "."
+
+	// Redirect and display the command's output
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	// Run the 'go build' command
+	err := cmd.Run()
+	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+	}
+
+	// copy across assets
+	copyAssets()
+
 }
