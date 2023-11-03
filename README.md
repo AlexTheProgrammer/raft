@@ -44,6 +44,7 @@ another tool.
 
 then it becomes not raft's problem. I believe this is in line with the Unix philosophy of minimal modular software.
 
+## testing 
 but, what about unit testing?
 
 yep, even unit testing, not supported, if you want that you're gonna have to figure it out for yourself.
