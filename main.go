@@ -28,6 +28,19 @@ func copyAssets() {
 	}
 }
 
+func copyUserDefinedContent() {
+	targetFile := "styles.css"
+	data, err := os.ReadFile(targetFile)
+	if err != nil {
+		log.Printf("no styles.css found, not including user defined css in build")
+	}
+
+	err = os.WriteFile(filepath.Join(distFolder, targetFile), data, 0644)
+	if err != nil {
+		log.Fatalf("could not create asset %q", targetFile)
+	}
+}
+
 func readFiles() map[string][]byte {
 
 	resp := make(map[string][]byte)
@@ -109,5 +122,8 @@ func build() {
 
 	// copy across assets
 	copyAssets()
+
+	// copy across user defined contexnt
+	copyUserDefinedContent()
 
 }
